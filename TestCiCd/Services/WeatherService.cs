@@ -1,4 +1,4 @@
-﻿namespace TestCiCd.Services
+namespace TestCiCd.Services
 {
     public class WeatherService
     {
