@@ -2,5 +2,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
+  <Project Path="TestCiCd.Tests/TestCiCd.Tests.csproj" />
   <Project Path="TestCiCd/TestCiCd.csproj" />
 </Solution>
