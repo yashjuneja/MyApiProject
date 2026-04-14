@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path="sonar-project.properties" />
   </Folder>
   <Project Path="TestCiCd.Tests/TestCiCd.Tests.csproj" />
   <Project Path="TestCiCd/TestCiCd.csproj" />

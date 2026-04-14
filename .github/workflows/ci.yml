@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download your code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # SonarCloud needs full git history
+
+      # 2. Install Java (SonarCloud scanner needs it)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Install .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # 4. Install SonarCloud scanner tool
+      - name: Install SonarCloud Scanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      # 5. Restore packages
+      - name: Restore NuGet Packages
+        run: dotnet restore TestCiCd.slnx
+
+      # 6. Check formatting
+      - name: Check Code Formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
+      # 7. Begin SonarCloud scan
+      - name: Begin SonarCloud Scan
+        run: |
+          dotnet sonarscanner begin \
+            /k:"${{ secrets.SONAR_PROJECT_KEY }}" \
+            /o:"${{ secrets.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
+
+      # 8. Build with Roslyn analyzers
+      - name: Build Solution
+        run: dotnet build TestCiCd.slnx --configuration Release --no-restore
+
+      # 9. Run tests with coverage
+      - name: Run Tests With Coverage
+        run: |
+          dotnet test TestCiCd.slnx \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+
+      # 10. End SonarCloud scan and upload results
+      - name: End SonarCloud Scan
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
