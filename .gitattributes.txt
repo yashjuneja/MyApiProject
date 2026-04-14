@@ -1,0 +1,4 @@
+# Auto detect text files and normalize line endings to CRLF
+* text=auto
+*.cs text eol=crlf
+*.csproj text eol=crlf
